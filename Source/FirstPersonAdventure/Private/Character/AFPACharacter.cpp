@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AAFPACharacter::AAFPACharacter()
@@ -19,6 +20,8 @@ AAFPACharacter::AAFPACharacter()
 void AAFPACharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+    GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 	
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
     {
@@ -38,6 +41,9 @@ void AAFPACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     {
         EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Move);
         EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Look);
+        //Sprint
+        EIC->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Sprint);
+        EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAFPACharacter::Sprint);
     }
 }
 void AAFPACharacter::Move(const FInputActionValue& Value)
@@ -52,6 +58,12 @@ void AAFPACharacter::Look(const FInputActionValue& Value)
     FVector2D Input = Value.Get<FVector2D>();
     AddControllerYawInput(Input.X);
     AddControllerPitchInput(Input.Y);
+}
+
+void AAFPACharacter::Sprint(const FInputActionValue& Value)
+{
+    bool bIsSprinting = Value.Get<bool>();
+    GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? SprintSpeed : NormalSpeed;
 }
 
 // Called every frame

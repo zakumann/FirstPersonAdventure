@@ -23,6 +23,7 @@ protected:
 
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
+	void Sprint(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputMappingContext* DefaultMappingContext;
@@ -32,6 +33,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* SprintAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float NormalSpeed = 600.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float SprintSpeed = 1200.f;
 
 public:	
 	// Called every frame
