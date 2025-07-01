@@ -14,6 +14,12 @@ AAFPACharacter::AAFPACharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+    SpringArm->SetupAttachment(RootComponent);
+    SpringArm->TargetArmLength = 0.0f; // for FPS, otherwise adjust for TPS
+
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm);
 }
 
 // Called when the game starts or when spawned
@@ -44,6 +50,8 @@ void AAFPACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         //Sprint
         EIC->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Sprint);
         EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAFPACharacter::Sprint);
+        // Interact
+        EIC->BindAction(InteractAction, ETriggerEvent::Started, this, &AAFPACharacter::Interact);
     }
 }
 void AAFPACharacter::Move(const FInputActionValue& Value)
@@ -64,6 +72,25 @@ void AAFPACharacter::Sprint(const FInputActionValue& Value)
 {
     bool bIsSprinting = Value.Get<bool>();
     GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? SprintSpeed : NormalSpeed;
+}
+
+void AAFPACharacter::Interact(const struct FInputActionValue& Value)
+{
+    FVector Start = Camera->GetComponentLocation();
+    FVector End = Start + (Camera->GetForwardVector() * 300.0f);
+
+    FHitResult HitResult;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+
+    bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+
+    if (bHit && HitResult.GetActor())
+    {
+        UE_LOG(LogTemp, Log, TEXT("Interacted with: %s"), *HitResult.GetActor()->GetName());
+    }
+
+    DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.0f, 0, 1.0f);
 }
 
 // Called every frame
