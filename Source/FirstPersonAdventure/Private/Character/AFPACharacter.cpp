@@ -16,10 +16,15 @@ AAFPACharacter::AAFPACharacter()
 
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 0.0f; // for FPS, otherwise adjust for TPS
+    SpringArm->TargetArmLength = 0.0f;
+    SpringArm->bUsePawnControlRotation = true;
+    SpringArm->bInheritPitch = true;
+    SpringArm->bInheritYaw = true;
 
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     Camera->SetupAttachment(SpringArm);
+    Camera->SetRelativeLocation(FVector(0.f, 0.f, 60.f));
+    Camera->bUsePawnControlRotation = false;
 }
 
 // Called when the game starts or when spawned
@@ -43,15 +48,15 @@ void AAFPACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    if (auto EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    if (auto EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
-        EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Move);
-        EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Look);
+        EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Move);
+        EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Look);
         //Sprint
-        EIC->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Sprint);
-        EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAFPACharacter::Sprint);
+        EnhancedInput->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AAFPACharacter::Sprint);
+        EnhancedInput->BindAction(SprintAction, ETriggerEvent::Completed, this, &AAFPACharacter::Sprint);
         // Interact
-        EIC->BindAction(InteractAction, ETriggerEvent::Started, this, &AAFPACharacter::Interact);
+        EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &AAFPACharacter::Interact);
     }
 }
 void AAFPACharacter::Move(const FInputActionValue& Value)
